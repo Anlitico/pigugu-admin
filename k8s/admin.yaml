@@ -1,0 +1,75 @@
+# pigugu-admin — internal management console for voice.turns + audio replay.
+#
+# ClusterIP only: it is an internal tool, reached via kubectl port-forward.
+# Reads ClickHouse over the native protocol (9000) and presigns S3 audio
+# URLs; the pod's IRSA role (sa-pigugu-admin.yaml) needs s3:GetObject on
+# the audio bucket.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pigugu-admin
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pigugu-admin
+  template:
+    metadata:
+      labels:
+        app: pigugu-admin
+    spec:
+      serviceAccountName: pigugu-admin-sa
+      containers:
+      - name: admin
+        image: 537557168531.dkr.ecr.us-west-1.amazonaws.com/pigugu-admin:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: CLICKHOUSE_HOST
+          value: "clickhouse"
+        - name: CLICKHOUSE_PORT
+          value: "9000"
+        - name: CLICKHOUSE_USER
+          value: "default"
+        - name: CLICKHOUSE_DATABASE
+          value: "voice"
+        - name: CLICKHOUSE_TABLE
+          value: "voice.turns"
+        - name: CLICKHOUSE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: clickhouse-password
+              key: password
+        - name: AUDIO_S3_BUCKET
+          value: "pigugu-clickhouse-audio"
+        - name: AUDIO_S3_REGION
+          value: "us-west-1"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 500m
+            memory: 256Mi
+        readinessProbe:
+          httpGet:
+            path: /api/health
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 10
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: pigugu-admin
+spec:
+  type: ClusterIP
+  selector:
+    app: pigugu-admin
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8000

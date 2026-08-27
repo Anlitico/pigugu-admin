@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pigugu 管理台 · 对话日志</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Pigugu 管理台</h1>
+    <span id="health" class="health">检测中…</span>
+  </header>
+
+  <section class="filters">
+    <div class="field">
+      <label>设备 device_id</label>
+      <input id="device_id" type="text" placeholder="如 fef37f1f">
+    </div>
+    <div class="field">
+      <label>用户 user_id</label>
+      <input id="user_id" type="text">
+    </div>
+    <div class="field">
+      <label>会话 session_id</label>
+      <input id="session_id" type="text">
+    </div>
+    <div class="field">
+      <label>文本搜索（用户说/助理说）</label>
+      <input id="q" type="text" placeholder="子串匹配">
+    </div>
+    <div class="field">
+      <label>起始时间</label>
+      <input id="start_dt" type="datetime-local">
+    </div>
+    <div class="field">
+      <label>结束时间</label>
+      <input id="end_dt" type="datetime-local">
+    </div>
+    <div class="field">
+      <label>turn 类型</label>
+      <select id="turn_type">
+        <option value="">全部</option>
+        <option value="wake_word">wake_word</option>
+        <option value="follow_up">follow_up</option>
+        <option value="inject">inject</option>
+        <option value="interrupted">interrupted</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>TTS 状态</label>
+      <select id="tts_status">
+        <option value="">全部</option>
+        <option value="complete">complete</option>
+        <option value="aborted">aborted</option>
+        <option value="interrupted">interrupted</option>
+        <option value="empty">empty</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>STT 状态</label>
+      <select id="stt_status">
+        <option value="">全部</option>
+        <option value="final">final</option>
+        <option value="abandoned">abandoned</option>
+        <option value="no_stt">no_stt</option>
+        <option value="interrupted">interrupted</option>
+      </select>
+    </div>
+    <div class="actions">
+      <button id="btn_search" class="primary">查询</button>
+      <button id="btn_reset" class="ghost">重置</button>
+      <span id="total" class="total"></span>
+    </div>
+  </section>
+
+  <section class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>时间</th>
+          <th>设备</th>
+          <th>用户</th>
+          <th>会话</th>
+          <th>类型</th>
+          <th>用户说</th>
+          <th>助理说</th>
+          <th>STT</th>
+          <th>TTS</th>
+          <th>时延 e2e</th>
+          <th>音频</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr><td colspan="11" class="empty">点击查询加载日志</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <nav class="pager">
+    <button id="btn_prev" class="ghost" disabled>上一页</button>
+    <span id="page_info"></span>
+    <button id="btn_next" class="ghost" disabled>下一页</button>
+  </nav>
+
+  <div id="detail" class="detail hidden"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
