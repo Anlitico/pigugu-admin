@@ -39,7 +39,7 @@ jobs:
 
   build:
     name: Build and Push
-    if: github.event_name == 'push' && needs.changes.outputs.admin == 'true'
+    if: needs.changes.outputs.admin == 'true' || github.event_name == 'workflow_dispatch'
     needs: changes
     runs-on: ubuntu-latest
     steps:
@@ -75,6 +75,7 @@ jobs:
   deploy:
     name: Deploy to EKS
     if: github.event_name == 'workflow_dispatch' # Manual deployment only
+    needs: [changes, build]
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
