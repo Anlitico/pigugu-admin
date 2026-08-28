@@ -1,33 +1,12 @@
 # ServiceAccount for pigugu-admin to presign S3 audio URLs via IRSA
 # (IAM Roles for Service Accounts).
 #
-# BEFORE applying: replace <ROLE-ARN> with the actual IAM role ARN.
-# The role's trust policy must allow the cluster's OIDC provider to
-# assume it, e.g.:
-#
-#   {
-#     "Version": "2012-10-17",
-#     "Statement": [{
-#       "Effect": "Allow",
-#       "Principal": {"Federated": "arn:aws:iam::537557168531:oidc-provider/oidc.eks.us-west-1.amazonaws.com/id/<OIDC-ID>"},
-#       "Action": "sts:AssumeRoleWithWebIdentity",
-#       "Condition": {
-#         "StringEquals": {
-#           "oidc.eks.us-west-1.amazonaws.com/id/<OIDC-ID>:sub": "system:serviceaccount:default:pigugu-admin-sa"
-#         }
-#       }
-#     }]
-#   }
-#
-# Required IAM permissions on the role:
-#   - s3:GetObject  on arn:aws:s3:::pigugu-clickhouse-audio/*
-#
-# The pigugu-admin Deployment must set:
-#   serviceAccountName: pigugu-admin-sa
-# in its pod template (see k8s/admin.yaml).
+# The role pigugu-admin-audio-reader was created with a trust policy
+# restricting to the cluster OIDC provider + this SA, and an inline
+# policy with s3:GetObject/GetObjectAttributes on the audio bucket.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: pigugu-admin-sa
   annotations:
-    eks.amazonaws.com/role-arn: "<ROLE-ARN>"
+    eks.amazonaws.com/role-arn: "arn:aws:iam::537557168531:role/pigugu-admin-audio-reader"
