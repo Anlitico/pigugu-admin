@@ -76,3 +76,15 @@ def test_parse_s3_uri():
         "pigugu-clickhouse-audio",
         "2026-08-01/abc/1.wav",
     )
+
+
+def test_listen_wav_in_list_and_detail_columns():
+    assert "s3_listen_wav" in turns.LIST_COLUMNS
+    sql, _ = turns.build_turn_query()
+    assert "s3_listen_wav" in sql
+    sql_detail, _ = turns.build_turn_query(include_detail_columns=True)
+    assert "s3_listen_wav" in sql_detail
+
+
+def test_listen_is_an_audio_kind():
+    assert "listen" in turns.AUDIO_KINDS

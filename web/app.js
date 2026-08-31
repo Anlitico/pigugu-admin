@@ -89,6 +89,7 @@ function renderRows(rows) {
       <td class="nowrap audio-btns">
         <button data-play="${esc(r.turn_id)}" data-kind="input" title="播放用户输入">🎤</button>
         <button data-play="${esc(r.turn_id)}" data-kind="tts" title="播放助理回复">🔊</button>
+        <button data-play="${esc(r.turn_id)}" data-kind="listen" title="播放回复期间录制">🎧</button>
       </td>`;
     tr.addEventListener("click", (ev) => {
       if (ev.target.closest("[data-play]")) return;
@@ -158,6 +159,7 @@ function detailHtml(r) {
     ["abandoned_stts", (r.abandoned_stts || []).length + " 条"],
     ["s3_input_wav", r.s3_input_wav],
     ["s3_tts_wav", r.s3_tts_wav],
+    ["s3_listen_wav", r.s3_listen_wav],
   ];
   const meta = kv.map(([k, v]) => `<div class="kv"><span>${esc(k)}</span><code>${esc(v)}</code></div>`).join("");
   const texts = `
@@ -171,6 +173,8 @@ function detailHtml(r) {
       <span class="audio-label">用户输入 input.wav</span>
       <audio controls data-audio="${esc(r.turn_id)}" data-kind="tts"></audio>
       <span class="audio-label">助理回复 tts.wav</span>
+      <audio controls data-audio="${esc(r.turn_id)}" data-kind="listen"></audio>
+      <span class="audio-label">回复期间录制 listen.wav</span>
     </div>`;
   return `<div class="detail-grid">${meta}</div>${texts}${audio}`;
 }
@@ -228,6 +232,12 @@ $("rows").addEventListener("click", async (ev) => {
   const btn = ev.target.closest("[data-play]");
   if (btn) {
     ev.stopPropagation();
+    // The <audio> elements live in the detail row — expand it first so the
+    // play button works even when the row is collapsed.
+    const rowEl = btn.closest("tr");
+    if (rowEl && !rowEl.nextElementSibling?.classList.contains("detail-row")) {
+      await toggleDetail(btn.dataset.play, rowEl);
+    }
     await loadAudio(btn.dataset.play, btn.dataset.kind);
   }
 });

@@ -1,0 +1,21 @@
+# Public NLB for the admin console: TLS terminated at the NLB with an ACM
+# cert for admin.pigugu.net, plain HTTP forwarded to the backend on 8000.
+apiVersion: v1
+kind: Service
+metadata:
+  name: pigugu-admin-nlb
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+    service.beta.kubernetes.io/aws-load-balancer-ssl-cert: arn:aws:acm:us-west-1:537557168531:certificate/d0c813c3-19ea-44d5-8e7a-0de9b6d50380
+    service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
+spec:
+  type: LoadBalancer
+  selector:
+    app: pigugu-admin
+  ports:
+    - name: https
+      port: 443
+      protocol: TCP
+      targetPort: 8000
