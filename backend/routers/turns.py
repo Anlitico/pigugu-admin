@@ -18,13 +18,13 @@ LIST_COLUMNS = [
     "utc_start_ms", "utc_end_ms", "duration_ms", "turn_type", "turn_phase",
     "stt_text", "stt_model", "stt_status",
     "tts_text", "tts_model", "tts_status", "tts_truncated_reason",
-    "s3_input_wav", "s3_input_json", "s3_tts_wav", "s3_tts_json", "s3_turn_json",
+    "s3_input_wav", "s3_input_json", "s3_tts_wav", "s3_tts_json", "s3_listen_wav", "s3_turn_json",
     "voice_segments", "input_pcm_bytes", "input_pcm_ms",
     "tts_pcm_bytes", "tts_pcm_ms", "e2e_ms", "stt_ms", "llm_ttft_ms",
     "tts_ttfb_ms", "device_playback_ms", "llm_model",
 ]
 DETAIL_EXTRA_COLUMNS = ["stt_interims", "abandoned_stts"]
-AUDIO_KINDS = ("input", "tts")
+AUDIO_KINDS = ("input", "tts", "listen")
 
 
 def build_turn_query(
@@ -140,13 +140,13 @@ async def get_turn(turn_id: str):
 @router.get("/{turn_id}/audio/{kind}")
 async def turn_audio_url(turn_id: str, kind: str):
     if kind not in AUDIO_KINDS:
-        raise HTTPException(status_code=400, detail="kind must be input or tts")
+        raise HTTPException(status_code=400, detail="kind must be input, tts or listen")
     if not settings.audio_s3_bucket:
         raise HTTPException(
             status_code=503, detail="S3 audio not configured (AUDIO_S3_BUCKET unset)"
         )
     rows = await query(
-        f"SELECT s3_input_wav, s3_tts_wav FROM {settings.clickhouse_table} "
+        f"SELECT s3_{kind}_wav FROM {settings.clickhouse_table} "
         "WHERE turn_id = %(turn_id)s LIMIT 1",
         {"turn_id": turn_id},
     )
